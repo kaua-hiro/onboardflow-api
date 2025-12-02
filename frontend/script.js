@@ -1,6 +1,6 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = ""; // Novo (Produção - Usa o mesmo domínio do site)
 
-// Credenciais
+// Credenciais (Hardcoded para simplicidade)
 const USER = "admin";
 const PASS = "guess123";
 const AUTH_HEADER = { 
@@ -48,12 +48,11 @@ async function loadEmployees() {
 
     try {
         const response = await fetch(`${API_URL}/employees/`);
-        allEmployees = await response.json(); // Salva na memória global
+        allEmployees = await response.json();
         
-        // Inverte para os mais recentes primeiro
         allEmployees.reverse();
 
-        renderColumns(); // Chama a função que desenha as colunas
+        renderColumns();
 
     } catch (error) {
         console.error("Erro:", error);
@@ -134,7 +133,6 @@ function createCardHTML(emp, openIds) {
     const btnCollapsedClass = isOpen ? '' : 'collapsed';
     const chevronIcon = isOpen ? 'bi-chevron-up' : 'bi-chevron-down';
 
-    // Nota: Removi as classes de coluna (col-md-6) daqui porque agora quem define a largura é o "Balde" pai
     return `
         <div class="card card-employee ${statusColorClass}">
             <div class="card-body">

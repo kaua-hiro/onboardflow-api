@@ -1,10 +1,12 @@
 import secrets
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
 from typing import List
-
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app import models, schemas, database
 
 # Cria as tabelas no banco ao iniciar
@@ -153,3 +155,8 @@ def toggle_task_status(
     db.commit()
     db.refresh(task)
     return task
+
+if os.path.exists("frontend"):
+    # 1. Monta a pasta para servir arquivos estáticos (JS, CSS, Imagens)
+    # html=True faz com que acessar "/" abra automaticamente o index.html
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
