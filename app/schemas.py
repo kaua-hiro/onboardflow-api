@@ -38,3 +38,4 @@ class Employee(EmployeeBase):
 
     # Nova sintaxe do Pydantic V2
     model_config = ConfigDict(from_attributes=True)
+    
