@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from app.database import Base
+from sqlalchemy.sql import func
 
 class Employee(Base):
     __tablename__ = "employees"
@@ -10,7 +10,7 @@ class Employee(Base):
     full_name = Column(String, index=True)
     role = Column(String)
     start_date = Column(String)  # Pode ser Date, mas String simplifica MVP
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, server_default=func.now())
 
     # Relacionamento: Um funcionário tem várias tarefas
     tasks = relationship("OnboardingTask", back_populates="employee", cascade="all, delete-orphan")

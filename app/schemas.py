@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict # <--- Import novo
 from typing import List, Optional
 from datetime import datetime
 
@@ -14,8 +14,8 @@ class Task(TaskBase):
     id: int
     employee_id: int
 
-    class Config:
-        from_attributes = True # Antigo orm_mode
+    # Nova sintaxe do Pydantic V2 (Substitui a class Config)
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas de Funcionários ---
 class EmployeeBase(BaseModel):
@@ -26,15 +26,15 @@ class EmployeeBase(BaseModel):
 class EmployeeCreate(EmployeeBase):
     pass
 
+class EmployeeUpdate(BaseModel):
+    full_name: str
+    role: str
+    start_date: str
+
 class Employee(EmployeeBase):
     id: int
     created_at: datetime | None = None
     tasks: List[Task] = []
 
-    class Config:
-        from_attributes = True
-
-class EmployeeUpdate(BaseModel):
-    full_name: str
-    role: str
-    start_date: str
+    # Nova sintaxe do Pydantic V2
+    model_config = ConfigDict(from_attributes=True)
