@@ -1,11 +1,9 @@
 const API_URL = "http://127.0.0.1:8000";
 
-// 1. Carregar funcionários ao abrir a tela
 document.addEventListener("DOMContentLoaded", () => {
     loadEmployees();
 });
 
-// 2. Função para buscar dados da API
 async function loadEmployees() {
     const listElement = document.getElementById("employeesList");
     listElement.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary"></div></div>';
@@ -14,25 +12,29 @@ async function loadEmployees() {
         const response = await fetch(`${API_URL}/employees/`);
         const employees = await response.json();
         
-        listElement.innerHTML = ""; // Limpa o loading
+        listElement.innerHTML = "";
 
-        // Para cada funcionário, cria um Card HTML
         employees.reverse().forEach(emp => {
             const card = document.createElement("div");
             card.className = "col-md-6 col-lg-4 mb-4";
             
-            // Lógica da barra de progresso
             const totalTasks = emp.tasks.length;
             const completedTasks = emp.tasks.filter(t => t.is_completed).length;
             const progress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
             const progressColor = progress === 100 ? "bg-success" : "bg-primary";
 
+            // ADICIONEI O BOTÃO DE DELETE NO CABEÇALHO DO CARD
             card.innerHTML = `
                 <div class="card card-employee h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title m-0">${emp.full_name}</h5>
-                            <span class="badge bg-secondary">${emp.role}</span>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title m-0">${emp.full_name}</h5>
+                                <span class="badge bg-secondary">${emp.role}</span>
+                            </div>
+                            <button onclick="deleteEmployee(${emp.id})" class="btn btn-outline-danger btn-sm border-0" title="Excluir Colaborador">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                         <p class="text-muted small"><i class="bi bi-calendar-event"></i> Início: ${emp.start_date}</p>
                         
@@ -60,11 +62,10 @@ async function loadEmployees() {
 
     } catch (error) {
         console.error("Erro:", error);
-        listElement.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados da API. O servidor está rodando?</div>`;
+        listElement.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados. API Offline?</div>`;
     }
 }
 
-// 3. Função para Cadastrar Funcionário
 document.getElementById("employeeForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -83,7 +84,7 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
 
         if (response.ok) {
             document.getElementById("employeeForm").reset();
-            loadEmployees(); // Recarrega a lista
+            loadEmployees();
         } else {
             alert("Erro ao criar funcionário");
         }
@@ -92,12 +93,30 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
     }
 });
 
-// 4. Função para Marcar/Desmarcar Tarefa
 async function toggleTask(taskId) {
     try {
         await fetch(`${API_URL}/tasks/${taskId}/toggle`, { method: "PATCH" });
-        loadEmployees(); // Recarrega para atualizar a barra de progresso
+        loadEmployees();
     } catch (error) {
         console.error("Erro ao atualizar tarefa:", error);
+    }
+}
+
+async function deleteEmployee(id) {
+    if (confirm("Tem certeza que deseja excluir este colaborador? Todas as tarefas serão apagadas.")) {
+        try {
+            const response = await fetch(`${API_URL}/employees/${id}`, {
+                method: "DELETE"
+            });
+            
+            if (response.ok) {
+                loadEmployees(); // Recarrega a lista
+            } else {
+                alert("Erro ao excluir.");
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+            alert("Erro de conexão.");
+        }
     }
 }

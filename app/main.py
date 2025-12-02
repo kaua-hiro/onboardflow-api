@@ -76,3 +76,14 @@ def toggle_task_status(task_id: int, db: Session = Depends(database.get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+@app.delete("/employees/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_employee(employee_id: int, db: Session = Depends(database.get_db)):
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    db.delete(employee)
+    db.commit()
+    return None

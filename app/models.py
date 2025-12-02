@@ -13,7 +13,7 @@ class Employee(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relacionamento: Um funcionário tem várias tarefas
-    tasks = relationship("OnboardingTask", back_populates="employee")
+    tasks = relationship("OnboardingTask", back_populates="employee", cascade="all, delete-orphan")
 
 class OnboardingTask(Base):
     __tablename__ = "onboarding_tasks"
