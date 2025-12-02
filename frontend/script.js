@@ -23,7 +23,8 @@ async function loadEmployees() {
             const progress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
             const progressColor = progress === 100 ? "bg-success" : "bg-primary";
 
-            // ADICIONEI O BOTÃO DE DELETE NO CABEÇALHO DO CARD
+            // BOTÕES: Adicionei o botão de LÁPIS (Editar) ao lado da lixeira
+            // Note que passo os dados como parâmetros para a função prepareEdit
             card.innerHTML = `
                 <div class="card card-employee h-100">
                     <div class="card-body">
@@ -32,9 +33,16 @@ async function loadEmployees() {
                                 <h5 class="card-title m-0">${emp.full_name}</h5>
                                 <span class="badge bg-secondary">${emp.role}</span>
                             </div>
-                            <button onclick="deleteEmployee(${emp.id})" class="btn btn-outline-danger btn-sm border-0" title="Excluir Colaborador">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <div>
+                                <button onclick="prepareEdit(${emp.id}, '${emp.full_name}', '${emp.role}', '${emp.start_date}')" 
+                                    class="btn btn-outline-primary btn-sm border-0 me-1" title="Editar">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button onclick="deleteEmployee(${emp.id})" 
+                                    class="btn btn-outline-danger btn-sm border-0" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                         <p class="text-muted small"><i class="bi bi-calendar-event"></i> Início: ${emp.start_date}</p>
                         
@@ -62,13 +70,16 @@ async function loadEmployees() {
 
     } catch (error) {
         console.error("Erro:", error);
-        listElement.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados. API Offline?</div>`;
     }
 }
 
+// Lógica Unificada: Criar ou Editar
 document.getElementById("employeeForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
+    const id = document.getElementById("employeeId").value; // Pega o ID oculto
+    const submitBtn = document.getElementById("submitBtn");
+
     const data = {
         full_name: document.getElementById("fullName").value,
         role: document.getElementById("role").value,
@@ -76,47 +87,75 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
     };
 
     try {
-        const response = await fetch(`${API_URL}/employees/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
+        let response;
+        
+        if (id) {
+            // SE TEM ID, É EDIÇÃO (PUT)
+            response = await fetch(`${API_URL}/employees/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+        } else {
+            // SE NÃO TEM ID, É CRIAÇÃO (POST)
+            response = await fetch(`${API_URL}/employees/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+        }
 
         if (response.ok) {
-            document.getElementById("employeeForm").reset();
+            resetForm(); // Limpa tudo
             loadEmployees();
         } else {
-            alert("Erro ao criar funcionário");
+            alert("Erro ao salvar dados.");
         }
     } catch (error) {
         console.error("Erro:", error);
     }
 });
 
+// Função para preencher o formulário com dados existentes
+function prepareEdit(id, name, role, date) {
+    document.getElementById("employeeId").value = id;
+    document.getElementById("fullName").value = name;
+    document.getElementById("role").value = role;
+    document.getElementById("startDate").value = date;
+
+    // Muda o visual do botão
+    const btn = document.getElementById("submitBtn");
+    btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+    btn.classList.remove("btn-primary");
+    btn.classList.add("btn-success");
+
+    // Leva a tela para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Função para limpar e voltar ao modo "Criar"
+function resetForm() {
+    document.getElementById("employeeForm").reset();
+    document.getElementById("employeeId").value = ""; // Limpa o ID oculto
+    
+    const btn = document.getElementById("submitBtn");
+    btn.innerHTML = '<i class="bi bi-plus-lg"></i>';
+    btn.classList.remove("btn-success");
+    btn.classList.add("btn-primary");
+}
+
 async function toggleTask(taskId) {
     try {
         await fetch(`${API_URL}/tasks/${taskId}/toggle`, { method: "PATCH" });
         loadEmployees();
-    } catch (error) {
-        console.error("Erro ao atualizar tarefa:", error);
-    }
+    } catch (error) { console.error(error); }
 }
 
 async function deleteEmployee(id) {
-    if (confirm("Tem certeza que deseja excluir este colaborador? Todas as tarefas serão apagadas.")) {
+    if (confirm("Tem certeza que deseja excluir?")) {
         try {
-            const response = await fetch(`${API_URL}/employees/${id}`, {
-                method: "DELETE"
-            });
-            
-            if (response.ok) {
-                loadEmployees(); // Recarrega a lista
-            } else {
-                alert("Erro ao excluir.");
-            }
-        } catch (error) {
-            console.error("Erro:", error);
-            alert("Erro de conexão.");
-        }
+            await fetch(`${API_URL}/employees/${id}`, { method: "DELETE" });
+            loadEmployees();
+        } catch (error) { console.error(error); }
     }
 }

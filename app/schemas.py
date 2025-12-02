@@ -33,3 +33,8 @@ class Employee(EmployeeBase):
 
     class Config:
         from_attributes = True
+
+class EmployeeUpdate(BaseModel):
+    full_name: str
+    role: str
+    start_date: str

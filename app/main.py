@@ -87,3 +87,21 @@ def delete_employee(employee_id: int, db: Session = Depends(database.get_db)):
     db.delete(employee)
     db.commit()
     return None
+
+@app.put("/employees/{employee_id}", response_model=schemas.Employee)
+def update_employee(employee_id: int, employee: schemas.EmployeeUpdate, db: Session = Depends(database.get_db)):
+    # 1. Busca o funcionário
+    db_employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    
+    if not db_employee:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    # 2. Atualiza os campos
+    db_employee.full_name = employee.full_name
+    db_employee.role = employee.role
+    db_employee.start_date = employee.start_date
+    
+    # 3. Salva
+    db.commit()
+    db.refresh(db_employee)
+    return db_employee
