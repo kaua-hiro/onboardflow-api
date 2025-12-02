@@ -21,13 +21,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Lista padrão de tarefas para todo novo funcionário (Regra de Negócio)
+# Lista padrão de tarefas baseada no checklist real da empresa
 DEFAULT_TASKS = [
-    "Criar conta de E-mail Corporativo",
-    "Adicionar ao grupo do Teams",
-    "Configurar acesso à VPN",
-    "Solicitar crachá de acesso",
-    "Agendar reunião de boas-vindas"
+    "Configurar Acesso ao AD (Active Directory)",
+    "Restringir Horário de Acesso",
+    "Gerar e Definir Senha Aleatória",
+    "Configurar Acesso à VPN",
+    "Criar Conta de E-Mail",
+    "Configurar Assinatura de E-Mail Padrão",
+    "Incluir Usuário nos Grupos de E-Mail",
+    "Liberar Acesso ao BPM",
+    "Configurar Assinatura Linx",
+    "Coletar Termo de Responsabilidade (Equipamento)",
+    "Cadastrar Biometria (Porta Principal)",
+    "Validar se Perfil foi Configurado e Liberado"
 ]
 
 # --- Endpoints ---
