@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 from app import models, schemas, database
 
@@ -13,6 +14,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Lista padrão de tarefas para todo novo funcionário (Regra de Negócio)
 DEFAULT_TASKS = [
     "Criar conta de E-mail Corporativo",

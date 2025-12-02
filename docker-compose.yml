@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: onboardflow_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mapeia o banco de dados para fora do container (persistência)
+      - ./data:/app/data
+    environment:
+      # Força o banco a ser salvo na pasta mapeada acima
+      - DATABASE_URL=sqlite:////app/data/onboardflow.db
