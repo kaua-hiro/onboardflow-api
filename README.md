@@ -1,64 +1,99 @@
-# 🚀 OnboardFlow
+# 🚀 OnboardFlow API
 
-> Sistema fullstack para gestão automatizada de onboarding de colaboradores e provisionamento de acessos de TI
+> Sistema de gestão de onboarding para departamentos de TI, focado na automação de checklists de acesso e provisionamento
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green)
-![JavaScript](https://img.shields.io/badge/Frontend-VanillaJS%20%2B%20Bootstrap-yellow)
-![Docker](https://img.shields.io/badge/Infra-Docker-blue)
+![Deploy](https://img.shields.io/badge/Deploy-Render-success)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+## 🌐 Demo Online
+
+O projeto está rodando ao vivo no Render.
+
+**🔗 Link:** [https://onboardflow-api-nqe1.onrender.com](https://onboardflow-api-nqe1.onrender.com)
+
+**Credenciais de Acesso (Modo Visitante):**
+- **Usuário:** `admin`
+- **Senha:** `guess123`
+
+> ⚠️ **Nota:** Como é um ambiente de demonstração gratuito, o banco de dados reseta automaticamente após períodos de inatividade.
 
 ## 📖 Sobre o Projeto
 
-O **OnboardFlow** resolve a fragmentação e falta de padronização no processo de entrada de novos funcionários. Diferente de planilhas soltas e processos manuais, o sistema centraliza o cadastro de colaboradores e gera automaticamente um **checklist padronizado de tarefas de infraestrutura** (configuração de VPN, criação de e-mail, provisionamento no Active Directory, etc.), permitindo que o time de TI acompanhe o progresso de cada onboarding em tempo real.
-
-### Principais Benefícios
-
-- **Centralização:** Todas as informações de onboarding em um único lugar
-- **Padronização:** Garante que nenhuma etapa crítica seja esquecida
-- **Visibilidade:** Acompanhamento em tempo real do status de cada colaborador
-- **Eficiência:** Reduz o tempo de provisionamento e elimina retrabalho
+O **OnboardFlow** resolve a fragmentação e falta de padronização no processo de entrada de novos funcionários. O sistema centraliza o cadastro de colaboradores e gera automaticamente um checklist padronizado com 12 tarefas de infraestrutura (VPN, Active Directory, E-mail, etc.), permitindo que o time de TI acompanhe o progresso de cada onboarding em tempo real.
 
 ## ✨ Funcionalidades
 
-- **Gestão de Colaboradores:** CRUD completo com cadastro, edição, visualização e remoção
-- **Automação de Checklist:** Geração automática de tarefas padrão ao criar um novo usuário
-- **Dashboard Interativo:** Interface SPA com barras de progresso e indicadores visuais dinâmicos
-- **Gestão de Tarefas:** Marque tarefas como concluídas e acompanhe o progresso percentual
-- **Integridade de Dados:** Cascade delete garante que ao remover um colaborador, suas tarefas associadas sejam limpas automaticamente
-- **API RESTful:** Documentação automática com Swagger/OpenAPI
+- **CRUD Completo de Colaboradores:** Cadastro, edição e remoção com proteção lógica
+- **Automação de Checklist:** Ao criar um funcionário, 12 tarefas de segurança são geradas automaticamente (VPN, AD, Email, etc.)
+- **Gestão Visual de Tarefas:** Marque/desmarque itens com atualização de barra de progresso em tempo real
+- **Layout Responsivo Inteligente:**
+  - 🖥️ **Desktop:** 3 Colunas
+  - 📱 **Tablet:** 2 Colunas
+  - 📱 **Mobile:** 1 Coluna
+  - **Lógica Masonry:** Os cards se organizam verticalmente preenchendo espaços vazios ("efeito Pinterest")
+- **Segurança Básica:** Autenticação HTTP Basic Auth para operações de escrita (POST, PUT, DELETE)
+- **Avatares Automáticos:** Geração dinâmica de avatares com iniciais dos colaboradores
+- **Feedback Visual:** Toasts e alertas com SweetAlert2
 
-## 🛠 Tech Stack
+## 💻 Tecnologias Utilizadas
 
-| Camada | Tecnologia |
-|--------|-----------|
-| **Backend** | Python 3.11+, FastAPI, SQLAlchemy (ORM), Pydantic |
-| **Frontend** | HTML5, JavaScript (ES6+), Bootstrap 5, Fetch API |
-| **Banco de Dados** | SQLite (Desenvolvimento) / SQL Server (Produção) |
-| **Infraestrutura** | Docker, Docker Compose |
-| **Documentação** | Swagger UI (automática via FastAPI) |
+### Backend
+- **Python 3.11+** (Compatível com 3.14 Alpha)
+- **FastAPI:** Framework moderno e de alta performance
+- **SQLAlchemy:** ORM para manipulação de banco de dados
+- **Pydantic V2:** Validação de dados robusta
+- **SQLite:** Banco de dados local (preparado para migração p/ SQL Server/PostgreSQL)
 
-## 🚀 Como Rodar o Projeto
+### Frontend
+- **Vanilla JavaScript:** Lógica pura, sem frameworks pesados, garantindo leveza
+- **Bootstrap 5:** Sistema de Grid e Componentes (Modais, Toasts, Accordions)
+- **SweetAlert2:** Alertas e confirmações visuais
+- **UI Avatars:** Geração automática de avatares com as iniciais
 
-### Opção 1: Via Docker (Recomendado)
+### Infraestrutura & Deploy
+- **Docker:** Containerização da aplicação completa
+- **Render:** Hospedagem em nuvem (PaaS) via Docker
+- **Uvicorn:** Servidor ASGI para produção
 
-Se você tem Docker e Docker Compose instalados:
+## 📂 Estrutura do Projeto
+```
+onboardflow-api/
+├── app/
+│   ├── main.py          # Entrypoint, Rotas e Config de Arquivos Estáticos
+│   ├── models.py        # Tabelas do Banco (SQLAlchemy)
+│   ├── schemas.py       # Validação de Dados (Pydantic)
+│   └── database.py      # Conexão com Banco (SQLite/SQL Server)
+├── frontend/
+│   ├── index.html       # Interface Única (SPA)
+│   └── script.js        # Lógica de Renderização, Fetch API e Masonry
+├── tests/
+│   └── test_main.py     # Testes de Integração (Pytest)
+├── Dockerfile           # Receita da Imagem Docker
+├── requirements.txt     # Dependências do Python
+├── .gitignore
+└── README.md
+```
+
+## 🚀 Como Rodar Localmente
+
+### Opção 1: Com Docker (Recomendado)
+
+Se tiver o Docker instalado, é o jeito mais fácil:
 ```bash
 # Clone o repositório
 git clone https://github.com/kaua-hiro/onboardflow-api.git
 cd onboardflow-api
 
-# Execute o ambiente completo
-docker compose up --build
+# Construa e execute o container
+docker build -t onboardflow .
+docker run -p 8000:8000 onboardflow
 ```
 
-O sistema estará disponível em: `http://localhost:8000`
+Acesse: `http://localhost:8000`
 
-Para parar os containers:
-```bash
-docker compose down
-```
-
-### Opção 2: Instalação Manual (Python)
+### Opção 2: Manualmente (Python)
 
 **Pré-requisitos:**
 - Python 3.11 ou superior
@@ -66,80 +101,60 @@ docker compose down
 
 **Passos:**
 
-1. **Clone o repositório:**
+1. **Crie um ambiente virtual:**
 ```bash
-git clone https://github.com/kaua-hiro/onboardflow-api.git
-cd onboardflow-api
-```
-
-2. **Crie e ative o ambiente virtual:**
-```bash
-# Criar ambiente virtual
 python -m venv venv
 
-# Ativar no Windows:
-.\venv\Scripts\activate
+# Windows:
+venv\Scripts\activate
 
-# Ativar no Linux/Mac:
+# Linux/Mac:
 source venv/bin/activate
 ```
 
-3. **Instale as dependências:**
+2. **Instale as dependências:**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Execute a API:**
+3. **Rode o servidor:**
 ```bash
 uvicorn app.main:app --reload
 ```
 
-5. **Acesse o sistema:**
-- Interface principal: Abra `frontend/index.html` no navegador
-- Documentação da API: `http://localhost:8000/docs`
-
-## 📂 Estrutura do Projeto
-```
-onboardflow-api/
-├── app/                      # Núcleo da aplicação backend
-│   ├── __init__.py
-│   ├── main.py              # Rotas da API e lógica principal
-│   ├── models.py            # Modelos do banco de dados (SQLAlchemy)
-│   ├── schemas.py           # Schemas de validação (Pydantic)
-│   └── database.py          # Configuração da conexão com banco
-├── frontend/                 # Interface do usuário
-│   ├── index.html           # SPA principal com Bootstrap
-│   └── script.js            # Lógica de integração com a API
-├── requirements.txt         # Dependências Python
-├── Dockerfile               # Imagem Docker da aplicação
-├── docker-compose.yml       # Orquestração dos serviços
-├── .gitignore
-└── README.md
-```
+4. **Acesse:** `http://127.0.0.1:8000`
 
 ## 🔌 Endpoints da API
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/usuarios/` | Lista todos os colaboradores |
-| `POST` | `/usuarios/` | Cria novo colaborador (gera checklist automático) |
-| `GET` | `/usuarios/{id}` | Detalhes de um colaborador específico |
-| `PUT` | `/usuarios/{id}` | Atualiza dados do colaborador |
-| `DELETE` | `/usuarios/{id}` | Remove colaborador e suas tarefas |
-| `GET` | `/tarefas/{usuario_id}` | Lista tarefas de um colaborador |
-| `PATCH` | `/tarefas/{id}/concluir` | Marca tarefa como concluída |
+| Método | Endpoint | Descrição | Autenticação |
+|--------|----------|-----------|--------------|
+| `GET` | `/usuarios/` | Lista todos os colaboradores | Não |
+| `POST` | `/usuarios/` | Cria novo colaborador (gera checklist automático) | Sim |
+| `GET` | `/usuarios/{id}` | Detalhes de um colaborador específico | Não |
+| `PUT` | `/usuarios/{id}` | Atualiza dados do colaborador | Sim |
+| `DELETE` | `/usuarios/{id}` | Remove colaborador e suas tarefas | Sim |
+| `GET` | `/tarefas/{usuario_id}` | Lista tarefas de um colaborador | Não |
+| `PATCH` | `/tarefas/{id}/concluir` | Marca/desmarca tarefa como concluída | Não |
 
 Acesse a documentação interativa completa em: `http://localhost:8000/docs`
 
-## 🎯 Roadmap de Melhorias
+## 🧪 Rodando Testes
 
-- [ ] Autenticação e controle de acesso (JWT)
-- [ ] Notificações por e-mail sobre tarefas pendentes
-- [ ] Integração com Active Directory para provisionamento automático
-- [ ] Dashboard de métricas e relatórios
-- [ ] Logs de auditoria de ações
-- [ ] Testes automatizados (pytest)
-- [ ] Deploy em nuvem (AWS/Azure)
+O projeto possui testes automatizados para garantir que a regra de negócio (criação de checklist automático) funcione corretamente.
+```bash
+pytest
+```
+
+## 🔮 Roadmap (Próximos Passos)
+
+- [ ] **Segurança Profissional:** Migrar senhas hardcoded para variáveis de ambiente (.env)
+- [ ] **Autenticação JWT:** Substituir Basic Auth por Token JWT e tela de login real
+- [ ] **Banco de Dados Persistente:** Conectar ao PostgreSQL ou SQL Server em produção
+- [ ] **Logs Estruturados:** Implementar sistema de logs para auditoria
+- [ ] **Notificações por E-mail:** Alertas sobre tarefas pendentes
+- [ ] **Integração com Active Directory:** Provisionamento automático de contas
+- [ ] **Dashboard de Métricas:** Relatórios de tempo médio de onboarding
+- [ ] **Testes E2E:** Cobertura completa com Pytest
 
 ## 🤝 Contribuindo
 
@@ -155,10 +170,12 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 👤 Autor
+## 👨‍💻 Autor
 
-Desenvolvido por **Kauã Hiro**
+Desenvolvido por **Kauã Hiro**  
+Estagiário de TI & Desenvolvedor Python
 
 ---
 
-⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
+⭐ **Projeto desenvolvido para fins de estudo e portfólio.**  
+Se este projeto foi útil para você, considere dar uma estrela no repositório!
