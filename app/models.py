@@ -9,10 +9,9 @@ class Employee(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, index=True)
     role = Column(String)
-    start_date = Column(String)  # Pode ser Date, mas String simplifica MVP
+    start_date = Column(String)
     created_at = Column(DateTime, server_default=func.now())
 
-    # Relacionamento: Um funcionário tem várias tarefas
     tasks = relationship("OnboardingTask", back_populates="employee", cascade="all, delete-orphan")
 
 class OnboardingTask(Base):
@@ -23,5 +22,4 @@ class OnboardingTask(Base):
     is_completed = Column(Boolean, default=False)
     employee_id = Column(Integer, ForeignKey("employees.id"))
 
-    # Relacionamento reverso
     employee = relationship("Employee", back_populates="tasks")

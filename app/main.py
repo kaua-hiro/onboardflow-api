@@ -9,7 +9,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app import models, schemas, database
 
-# Cria as tabelas no banco ao iniciar
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(
@@ -18,7 +17,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configuração de CORS (Permite que o Frontend acesse a API)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- SEGURANÇA (O Porteiro) ---
 security = HTTPBasic()
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
@@ -67,7 +64,7 @@ DEFAULT_TASKS = [
 def create_employee(
     employee: schemas.EmployeeCreate, 
     db: Session = Depends(database.get_db),
-    username: str = Depends(get_current_username) # <--- CADEADO
+    username: str = Depends(get_current_username)
 ):
     # 1. Cria o funcionário (Usa model_dump para Pydantic V2)
     db_employee = models.Employee(**employee.model_dump())
@@ -115,7 +112,6 @@ def update_employee(
     if not db_employee:
         raise HTTPException(status_code=404, detail="Funcionário não encontrado")
     
-    # Atualiza os campos
     db_employee.full_name = employee.full_name
     db_employee.role = employee.role
     db_employee.start_date = employee.start_date
@@ -157,6 +153,4 @@ def toggle_task_status(
     return task
 
 if os.path.exists("frontend"):
-    # 1. Monta a pasta para servir arquivos estáticos (JS, CSS, Imagens)
-    # html=True faz com que acessar "/" abra automaticamente o index.html
     app.mount("/", StaticFiles(directory="frontend", html=True), name="static")

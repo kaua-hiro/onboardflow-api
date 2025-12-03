@@ -1,8 +1,7 @@
-from pydantic import BaseModel, ConfigDict # <--- Import novo
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
-# --- Schemas de Tarefas ---
 class TaskBase(BaseModel):
     title: str
     is_completed: bool = False
@@ -14,10 +13,7 @@ class Task(TaskBase):
     id: int
     employee_id: int
 
-    # Nova sintaxe do Pydantic V2 (Substitui a class Config)
     model_config = ConfigDict(from_attributes=True)
-
-# --- Schemas de Funcionários ---
 class EmployeeBase(BaseModel):
     full_name: str
     role: str
@@ -36,6 +32,4 @@ class Employee(EmployeeBase):
     created_at: datetime | None = None
     tasks: List[Task] = []
 
-    # Nova sintaxe do Pydantic V2
     model_config = ConfigDict(from_attributes=True)
-    
