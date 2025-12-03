@@ -1,29 +1,26 @@
-const API_URL = ""; // Novo (Produção - Usa o mesmo domínio do site)
+const API_URL = "";
 
-// Credenciais (Hardcoded para simplicidade)
+// Credenciais
 const USER = "admin";
 const PASS = "guess123";
 const AUTH_HEADER = { 
     "Authorization": "Basic " + btoa(USER + ":" + PASS) 
 };
 
-// Variável para armazenar os dados e evitar refetch no resize
 let allEmployees = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     loadEmployees();
 });
 
-// Listener de Resize com Debounce (para ajustar colunas se redimensionar a janela)
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-        renderColumns(); // Re-desenha as colunas mantendo os dados
+        renderColumns();
     }, 200);
 });
 
-// Listener apenas para ícones (seta para cima/baixo)
 document.addEventListener('shown.bs.collapse', e => updateIcon(e.target.id, true));
 document.addEventListener('hidden.bs.collapse', e => updateIcon(e.target.id, false));
 
@@ -39,6 +36,12 @@ function updateIcon(collapseId, isOpen) {
     }
 }
 
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const parts = dateString.split('-');
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
 async function loadEmployees() {
     const listElement = document.getElementById("employeesList");
     
@@ -49,10 +52,9 @@ async function loadEmployees() {
     try {
         const response = await fetch(`${API_URL}/employees/`);
         allEmployees = await response.json();
-        
-        allEmployees.reverse();
+        allEmployees.reverse(); 
 
-        renderColumns();
+        renderColumns(); 
 
     } catch (error) {
         console.error("Erro:", error);
@@ -61,48 +63,60 @@ async function loadEmployees() {
 }
 
 function renderColumns() {
+    const currentlyOpenIds = new Set();
+    const scrollPositions = new Map(); // Mapa para guardar onde o scroll estava
+
+    document.querySelectorAll('.collapse.show').forEach(el => {
+        currentlyOpenIds.add(el.id);
+        const scrollableDiv = el.querySelector('div[style*="overflow-y: auto"]');
+        if (scrollableDiv) {
+            scrollPositions.set(el.id, scrollableDiv.scrollTop); 
+        }
+    });
+
     const listElement = document.getElementById("employeesList");
-    listElement.innerHTML = "";
+    listElement.innerHTML = ""; 
 
     if (allEmployees.length === 0) {
         listElement.innerHTML = '<div class="col-12 text-center text-muted mt-5"><h4>Nenhum colaborador encontrado</h4><p>Cadastre o primeiro acima 🚀</p></div>';
         return;
     }
 
-    // 1. Detecta quantas colunas cabem na tela
     const width = window.innerWidth;
     let numCols = 1;
-    if (width >= 992) numCols = 3;      // PC Grande
-    else if (width >= 768) numCols = 2; // Tablet
+    if (width >= 992) numCols = 3;      
+    else if (width >= 768) numCols = 2; 
 
-    // 2. Cria os "Baldes" (divs das colunas)
     const columnWrappers = [];
     for (let i = 0; i < numCols; i++) {
         const col = document.createElement("div");
-        // Bootstrap: se são 3 colunas, cada uma ocupa 4 espaços (col-4). Se 2, col-6.
         const colClass = numCols === 3 ? "col-lg-4" : (numCols === 2 ? "col-md-6" : "col-12");
-        col.className = `${colClass} d-flex flex-column gap-4`; // gap-4 dá o espaço vertical entre os cards
+        col.className = `${colClass} d-flex flex-column gap-4`;
         listElement.appendChild(col);
         columnWrappers.push(col);
     }
 
-    // 3. Snapshot do que está aberto (para manter estado)
-    const currentlyOpenIds = new Set();
-    document.querySelectorAll('.collapse.show').forEach(el => currentlyOpenIds.add(el.id));
-
-    // 4. Distribui as cartas nos baldes (Estilo Baralho: 1 pra vc, 1 pra mim...)
     allEmployees.forEach((emp, index) => {
         const cardHTML = createCardHTML(emp, currentlyOpenIds);
         
-        // Cria um wrapper temporário para converter string em elemento DOM
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = cardHTML;
         const cardElement = tempDiv.firstElementChild;
 
-        // Adiciona na coluna correta (Matemática: resto da divisão)
-        // Card 0 -> Col 0, Card 1 -> Col 1, Card 2 -> Col 2, Card 3 -> Col 0...
         columnWrappers[index % numCols].appendChild(cardElement);
     });
+
+    setTimeout(() => {
+        scrollPositions.forEach((scrollTop, id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                const scrollableDiv = el.querySelector('div[style*="overflow-y: auto"]');
+                if (scrollableDiv) {
+                    scrollableDiv.scrollTop = scrollTop;
+                }
+            }
+        });
+    }, 0);
 }
 
 function createCardHTML(emp, openIds) {
@@ -133,6 +147,8 @@ function createCardHTML(emp, openIds) {
     const btnCollapsedClass = isOpen ? '' : 'collapsed';
     const chevronIcon = isOpen ? 'bi-chevron-up' : 'bi-chevron-down';
 
+    const formattedDate = formatDate(emp.start_date);
+
     return `
         <div class="card card-employee ${statusColorClass}">
             <div class="card-body">
@@ -158,7 +174,7 @@ function createCardHTML(emp, openIds) {
                 </div>
                 
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <small class="text-muted"><i class="bi bi-calendar4 me-1"></i>${new Date(emp.start_date).toLocaleDateString('pt-BR')}</small>
+                    <small class="text-muted"><i class="bi bi-calendar4 me-1"></i>${formattedDate}</small>
                     ${badgeHtml}
                 </div>
                 
@@ -205,7 +221,6 @@ function createCardHTML(emp, openIds) {
     `;
 }
 
-// Toast
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -214,7 +229,6 @@ const Toast = Swal.mixin({
     timerProgressBar: true
 });
 
-// Submit Form
 document.getElementById("employeeForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("employeeId").value;
@@ -240,7 +254,7 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
 
         if (response.ok) {
             resetForm();
-            loadEmployees(); // Recarrega tudo
+            loadEmployees();
             Swal.fire({ icon: 'success', title: id ? 'Atualizado!' : 'Cadastrado!', timer: 2000, showConfirmButton: false });
         } else { throw new Error('Falha'); }
     } catch (error) {
