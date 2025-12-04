@@ -28,7 +28,6 @@ app.add_middleware(
 security = HTTPBasic()
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
-    # Em produção, estas senhas viriam do arquivo .env
     correct_username = secrets.compare_digest(credentials.username, "admin")
     correct_password = secrets.compare_digest(credentials.password, "guess123")
     
@@ -57,6 +56,45 @@ DEFAULT_TASKS = [
     "Validar se Perfil foi Configurado e Liberado"
 ]
 
+def seed_database():
+    db = database.SessionLocal()
+    
+    try:
+        if db.query(models.Employee).count() == 0:
+            print("🌱 Banco vazio detectado. Criando dados de exemplo...")
+            
+            # Lista de 3 colaboradores fictícios para quem visitar o site
+            demo_data = [
+                {"full_name": "Pamela Oliveira", "role": "Gerente de Projetos", "start_date": "2024-11-20"},
+                {"full_name": "João Guerra", "role": "Diretor TI", "start_date": "2025-01-15"},
+                {"full_name": "Kauã Hiro", "role": "Estágiario TI", "start_date": "2025-02-10"},
+            ]
+            
+            for data in demo_data:
+                employee = models.Employee(**data)
+                db.add(employee)
+                db.commit()
+                db.refresh(employee)
+                
+                for task_title in DEFAULT_TASKS:
+                    task = models.OnboardingTask(
+                        title=task_title,
+                        employee_id=employee.id
+                    )
+                    db.add(task)
+            
+            db.commit()
+            print("✅ 3 Colaboradores de teste criados com sucesso!")
+        else:
+            print("ℹ️ Banco de dados já contém registros. Seed pulado.")
+            
+    except Exception as e:
+        print(f"⚠️ Erro ao popular banco: {e}")
+    finally:
+        db.close()
+
+seed_database()
+
 # --- ENDPOINTS ---
 
 # Rota Protegida (Exige Login)
@@ -66,13 +104,11 @@ def create_employee(
     db: Session = Depends(database.get_db),
     username: str = Depends(get_current_username)
 ):
-    # 1. Cria o funcionário (Usa model_dump para Pydantic V2)
     db_employee = models.Employee(**employee.model_dump())
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
 
-    # 2. Gera automaticamente o checklist padrão
     for task_title in DEFAULT_TASKS:
         new_task = models.OnboardingTask(
             title=task_title,
