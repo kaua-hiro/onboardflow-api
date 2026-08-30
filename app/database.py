@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./onboardflow.db")
+_default_db_url = "sqlite:////tmp/onboardflow.db" if os.getenv("VERCEL") else "sqlite:///./onboardflow.db"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", _default_db_url)
 
 check_same_thread = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
 
