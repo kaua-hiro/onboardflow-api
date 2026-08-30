@@ -1,0 +1,252 @@
+/* OnboardFlow — provisioning manifest for new hires.
+   Subject: an IT/HR ops tool that tracks the real, unglamorous
+   checklist behind getting someone set up (AD access, VPN, email,
+   hardware). The design leans into that — a manifest/dossier read,
+   not a generic admin-panel blue. */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+  --ink: #1B1C2B;
+  --ink-soft: #565873;
+  --paper: #F6F5F1;
+  --panel: #FFFFFF;
+  --line: #E3E1D9;
+  --navy: #232752;
+  --navy-deep: #14172E;
+  --gold: #C08A2E;
+  --gold-soft: #F4E3C2;
+  --ok: #2F7A4F;
+  --ok-soft: #DCEEE1;
+  --wait: #8A8D6F;
+  --wait-soft: #EDEBDD;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Work Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(27, 28, 43, .06) 1px, transparent 0);
+  background-size: 28px 28px;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* ---------- Nav: the wordmark reads like a manifest header stamp ---------- */
+
+nav.navbar {
+  background: var(--navy-deep) !important;
+  border-bottom: 3px solid var(--gold);
+  padding: 1.6rem 0;
+}
+
+nav.navbar .navbar-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -.01em;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+
+nav.navbar .navbar-brand i {
+  color: var(--gold);
+}
+
+nav.navbar .btn-outline-light {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-radius: 4px;
+  border-color: rgba(255, 255, 255, .3);
+}
+
+nav.navbar .btn-outline-light:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--navy-deep);
+}
+
+/* ---------- Intake form: styled as a manifest entry slip ---------- */
+
+.card:not(.card-employee) {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(27, 28, 43, .04);
+}
+
+.card:not(.card-employee) .card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--navy-deep);
+}
+
+.form-control {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  padding: .7rem 1rem;
+}
+
+.form-control:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(35, 39, 82, .12);
+}
+
+.btn-primary {
+  background: var(--navy);
+  border-color: var(--navy);
+  border-radius: 6px;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--navy-deep);
+  border-color: var(--navy-deep);
+}
+
+.btn-success {
+  background: var(--ok);
+  border-color: var(--ok);
+  border-radius: 6px;
+}
+
+/* ---------- Employee cards: a manifest tile, not a Bootstrap card ---------- */
+
+.card-employee {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  border-left-width: 4px;
+  background: var(--panel);
+  box-shadow: 0 1px 2px rgba(27, 28, 43, .04);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.card-employee:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(27, 28, 43, .1);
+}
+
+.status-todo { border-left-color: var(--wait); }
+.status-progress { border-left-color: var(--navy); }
+.status-done { border-left-color: var(--ok); }
+
+.avatar-circle {
+  border-radius: 8px;
+  border: none;
+  box-shadow: none;
+}
+
+.card-employee .card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink) !important;
+}
+
+.card-employee .text-muted.small {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  letter-spacing: .01em;
+  color: var(--ink-soft) !important;
+}
+
+/* Status badge — plain text label on a soft tint, not a saturated
+   Bootstrap pill; reads like a manifest stamp. */
+.card-employee .badge {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: .02em;
+  border-radius: 4px;
+  padding: .4rem .8rem;
+}
+
+.card-employee .badge.bg-secondary {
+  background: var(--wait-soft) !important;
+  color: var(--wait) !important;
+}
+
+.card-employee .badge.bg-primary {
+  background: rgba(35, 39, 82, .1) !important;
+  color: var(--navy) !important;
+}
+
+.card-employee .badge.bg-success {
+  background: var(--ok-soft) !important;
+  color: var(--ok) !important;
+}
+
+.card-employee small.text-muted {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--ink-soft) !important;
+}
+
+/* Progress — a segmented manifest gauge instead of a flat bar. The
+   ready-to-eat "X% complete" number is real signal (n of the actual
+   provisioning steps), so it stays; the bar itself is styled to look
+   like a row of ticks rather than a generic loading indicator. */
+.progress {
+  background-color: var(--line) !important;
+  height: 6px !important;
+  border-radius: 0 !important;
+  background-image: repeating-linear-gradient(90deg, var(--paper) 0 2px, transparent 2px 10%);
+  background-size: 10% 100%;
+}
+
+.progress-bar.bg-secondary { background-color: var(--wait) !important; }
+.progress-bar.bg-primary { background-color: var(--navy) !important; }
+.progress-bar.bg-success { background-color: var(--ok) !important; }
+
+/* Checklist toggle + list */
+
+.btn-light.border {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  border-radius: 6px !important;
+  border-color: var(--line) !important;
+  background: var(--paper) !important;
+}
+
+.card-employee .card.card-body.bg-light {
+  background: var(--paper) !important;
+  border-radius: 8px !important;
+}
+
+.task-item span.text-dark,
+.task-item span.small {
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+}
+
+.task-done-text {
+  color: var(--ink-soft) !important;
+}
+
+.btn-check-toggle.btn-white {
+  background: var(--panel);
+  border-color: var(--line) !important;
+}
+
+.btn-check-toggle.btn-success {
+  background: var(--ok) !important;
+  border-color: var(--ok) !important;
+}
+
+/* Empty / loading states */
+
+#employeesList .text-muted h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
