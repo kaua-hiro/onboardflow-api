@@ -40,7 +40,10 @@
 
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
-        <span class="navbar-brand mb-0 h1"><i class="bi bi-person-badge-fill me-2"></i>OnboardFlow</span>
+        <div>
+            <span class="navbar-brand mb-0 h1"><i class="bi bi-person-badge-fill me-2"></i>OnboardFlow</span>
+            <div class="navbar-tagline">IT Onboarding · Enterprise Corp</div>
+        </div>
         <button class="btn btn-outline-light btn-sm" onclick="loadEmployees()">
             <i class="bi bi-arrow-clockwise"></i> Atualizar
         </button>
@@ -48,6 +51,8 @@
 </nav>
 
 <div class="container">
+    <div id="statsBar" class="stats-bar mb-4"></div>
+
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <h5 class="card-title mb-3">🚀 Novo Colaborador</h5>
@@ -73,6 +78,22 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <div class="roster-toolbar mb-3">
+        <div class="roster-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por nome ou cargo...">
+        </div>
+        <select id="statusFilter" class="form-select roster-filter">
+            <option value="all">Todos os status</option>
+            <option value="todo">A Iniciar</option>
+            <option value="progress">Em Andamento</option>
+            <option value="done">Concluído</option>
+        </select>
+        <button class="btn btn-light border" id="exportCsvBtn" type="button">
+            <i class="bi bi-download me-1"></i> Exportar CSV
+        </button>
     </div>
 
     <div id="employeesList" class="row align-items-start">

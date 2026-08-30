@@ -8,6 +8,8 @@ const AUTH_HEADER = {
 };
 
 let allEmployees = [];
+let searchTerm = "";
+let statusFilter = "all";
 
 const AVATAR_PALETTE = [
     { bg: "#232752", fg: "#F4E3C2" },
@@ -39,6 +41,26 @@ function announce(message) {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadEmployees();
+
+    const searchInput = document.getElementById("searchInput");
+    const statusFilterSelect = document.getElementById("statusFilter");
+    const exportBtn = document.getElementById("exportCsvBtn");
+
+    let searchDebounce;
+    searchInput.addEventListener("input", (e) => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            searchTerm = e.target.value;
+            renderColumns();
+        }, 200);
+    });
+
+    statusFilterSelect.addEventListener("change", (e) => {
+        statusFilter = e.target.value;
+        renderColumns();
+    });
+
+    exportBtn.addEventListener("click", exportEmployeesCsv);
 });
 
 let resizeTimer;
@@ -70,6 +92,97 @@ function formatDate(dateString) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
+function getEmployeeStatus(emp) {
+    const total = emp.tasks.length;
+    const done = emp.tasks.filter(t => t.is_completed).length;
+    if (total > 0 && done === total) return "done";
+    if (done > 0) return "progress";
+    return "todo";
+}
+
+function getEmployeeProgress(emp) {
+    const total = emp.tasks.length;
+    if (total === 0) return 0;
+    const done = emp.tasks.filter(t => t.is_completed).length;
+    return Math.round((done / total) * 100);
+}
+
+function renderStats() {
+    const statsBar = document.getElementById("statsBar");
+    if (!statsBar) return;
+
+    if (allEmployees.length === 0) {
+        statsBar.innerHTML = "";
+        return;
+    }
+
+    const total = allEmployees.length;
+    const todo = allEmployees.filter(e => getEmployeeStatus(e) === "todo").length;
+    const progress = allEmployees.filter(e => getEmployeeStatus(e) === "progress").length;
+    const done = allEmployees.filter(e => getEmployeeStatus(e) === "done").length;
+    const avgProgress = Math.round(
+        allEmployees.reduce((sum, e) => sum + getEmployeeProgress(e), 0) / total
+    );
+
+    statsBar.innerHTML = `
+        <div class="stat-tile">
+            <div class="stat-tile__icon is-total"><i class="bi bi-people-fill"></i></div>
+            <div><div class="stat-tile__label">Colaboradores</div><div class="stat-tile__value">${total}</div></div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile__icon is-wait"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="stat-tile__label">A Iniciar</div><div class="stat-tile__value">${todo}</div></div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile__icon is-progress"><i class="bi bi-arrow-repeat"></i></div>
+            <div><div class="stat-tile__label">Em Andamento</div><div class="stat-tile__value">${progress}</div></div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile__icon is-done"><i class="bi bi-check-circle-fill"></i></div>
+            <div><div class="stat-tile__label">Progresso Médio</div><div class="stat-tile__value">${avgProgress}%</div></div>
+        </div>
+    `;
+}
+
+function getFilteredEmployees() {
+    const term = searchTerm.trim().toLowerCase();
+    return allEmployees.filter(emp => {
+        const matchesTerm = !term
+            || emp.full_name.toLowerCase().includes(term)
+            || emp.role.toLowerCase().includes(term);
+        const matchesStatus = statusFilter === "all" || getEmployeeStatus(emp) === statusFilter;
+        return matchesTerm && matchesStatus;
+    });
+}
+
+function exportEmployeesCsv() {
+    const rows = getFilteredEmployees();
+    if (rows.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Nada para exportar', text: 'Ajuste os filtros ou cadastre colaboradores.', customClass: SWAL_CLASSES });
+        return;
+    }
+    const statusLabel = { todo: "A Iniciar", progress: "Em Andamento", done: "Concluído" };
+    const header = ["Nome", "Cargo", "Início", "Status", "Progresso"];
+    const csvRows = rows.map(emp => [
+        emp.full_name,
+        emp.role,
+        formatDate(emp.start_date),
+        statusLabel[getEmployeeStatus(emp)],
+        `${getEmployeeProgress(emp)}%`,
+    ]);
+    const csvContent = [header, ...csvRows]
+        .map(row => row.map(field => `"${String(field ?? "").replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `onboardflow-colaboradores-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    announce("Exportação concluída.");
+}
+
 async function loadEmployees() {
     const listElement = document.getElementById("employeesList");
     
@@ -91,6 +204,7 @@ async function loadEmployees() {
         allEmployees = await response.json();
         allEmployees.reverse();
 
+        renderStats();
         renderColumns();
         announce("Lista de colaboradores atualizada.");
 
@@ -113,17 +227,24 @@ function renderColumns() {
     });
 
     const listElement = document.getElementById("employeesList");
-    listElement.innerHTML = ""; 
+    listElement.innerHTML = "";
 
     if (allEmployees.length === 0) {
         listElement.innerHTML = '<div class="col-12"><div class="empty-state"><h4>Nenhum dossiê aberto ainda</h4><p>Cadastre o primeiro colaborador no formulário acima para começar o provisionamento.</p></div></div>';
         return;
     }
 
+    const filteredEmployees = getFilteredEmployees();
+
+    if (filteredEmployees.length === 0) {
+        listElement.innerHTML = '<div class="col-12"><div class="empty-state"><h4>Nenhum colaborador encontrado</h4><p>Ajuste a busca ou o filtro de status.</p></div></div>';
+        return;
+    }
+
     const width = window.innerWidth;
     let numCols = 1;
-    if (width >= 992) numCols = 3;      
-    else if (width >= 768) numCols = 2; 
+    if (width >= 992) numCols = 3;
+    else if (width >= 768) numCols = 2;
 
     const columnWrappers = [];
     for (let i = 0; i < numCols; i++) {
@@ -134,7 +255,7 @@ function renderColumns() {
         columnWrappers.push(col);
     }
 
-    allEmployees.forEach((emp, index) => {
+    filteredEmployees.forEach((emp, index) => {
         const cardHTML = createCardHTML(emp, currentlyOpenIds);
         
         const tempDiv = document.createElement('div');
