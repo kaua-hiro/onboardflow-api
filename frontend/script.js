@@ -9,6 +9,34 @@ const AUTH_HEADER = {
 
 let allEmployees = [];
 
+const AVATAR_PALETTE = [
+    { bg: "#232752", fg: "#F4E3C2" },
+    { bg: "#C08A2E", fg: "#14172E" },
+    { bg: "#2F7A4F", fg: "#DCEEE1" },
+    { bg: "#8A5A3A", fg: "#F6F5F1" },
+    { bg: "#565873", fg: "#F6F5F1" },
+];
+
+function getInitials(fullName) {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function getAvatarColors(fullName) {
+    let hash = 0;
+    for (let i = 0; i < fullName.length; i++) {
+        hash = (hash + fullName.charCodeAt(i)) % AVATAR_PALETTE.length;
+    }
+    return AVATAR_PALETTE[hash];
+}
+
+function announce(message) {
+    const liveRegion = document.getElementById("liveRegion");
+    if (liveRegion) liveRegion.textContent = message;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadEmployees();
 });
@@ -46,19 +74,29 @@ async function loadEmployees() {
     const listElement = document.getElementById("employeesList");
     
     if (!listElement.innerHTML.trim()) {
-        listElement.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Carregando equipe...</p></div>';
+        listElement.innerHTML = Array.from({ length: 3 }).map(() => `
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="skeleton-card">
+                    <div class="skeleton-line" style="width: 60%; margin-bottom: .75rem;"></div>
+                    <div class="skeleton-line" style="width: 40%; margin-bottom: 1.5rem;"></div>
+                    <div class="skeleton-line" style="width: 100%; margin-bottom: .5rem;"></div>
+                    <div class="skeleton-line" style="width: 100%;"></div>
+                </div>
+            </div>
+        `).join("");
     }
 
     try {
         const response = await fetch(`${API_URL}/employees/`);
         allEmployees = await response.json();
-        allEmployees.reverse(); 
+        allEmployees.reverse();
 
-        renderColumns(); 
+        renderColumns();
+        announce("Lista de colaboradores atualizada.");
 
     } catch (error) {
         console.error("Erro:", error);
-        listElement.innerHTML = '<div class="col-12 text-center text-danger mt-5">Erro ao carregar dados.</div>';
+        listElement.innerHTML = '<div class="col-12"><div class="empty-state"><h4>Não foi possível carregar a equipe</h4><p>Verifique sua conexão e tente novamente.</p></div></div>';
     }
 }
 
@@ -78,7 +116,7 @@ function renderColumns() {
     listElement.innerHTML = ""; 
 
     if (allEmployees.length === 0) {
-        listElement.innerHTML = '<div class="col-12 text-center text-muted mt-5"><h4>Nenhum colaborador encontrado</h4><p>Cadastre o primeiro acima 🚀</p></div>';
+        listElement.innerHTML = '<div class="col-12"><div class="empty-state"><h4>Nenhum dossiê aberto ainda</h4><p>Cadastre o primeiro colaborador no formulário acima para começar o provisionamento.</p></div></div>';
         return;
     }
 
@@ -139,7 +177,8 @@ function createCardHTML(emp, openIds) {
     }
     
     const collapseId = `collapseChecklist-${emp.id}`;
-    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.full_name)}&background=random&color=fff&size=128`;
+    const avatarColors = getAvatarColors(emp.full_name);
+    const avatarInitials = getInitials(emp.full_name);
 
     const isOpen = openIds.has(collapseId);
     const showClass = isOpen ? 'show' : '';
@@ -154,15 +193,15 @@ function createCardHTML(emp, openIds) {
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="d-flex align-items-center">
-                        <img src="${avatarUrl}" alt="${emp.full_name}" class="avatar-circle me-3">
+                        <div class="avatar-badge me-3" style="background: ${avatarColors.bg}; color: ${avatarColors.fg};" aria-hidden="true">${avatarInitials}</div>
                         <div>
                             <h5 class="card-title m-0 fw-bold text-dark" style="font-size: 1.1rem;">${emp.full_name}</h5>
                             <div class="text-muted small">${emp.role}</div>
                         </div>
                     </div>
-                    
+
                     <div class="dropdown">
-                        <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-label="Mais ações para ${emp.full_name}">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
@@ -226,11 +265,43 @@ const Toast = Swal.mixin({
     position: 'top-end',
     showConfirmButton: false,
     timer: 3000,
-    timerProgressBar: true
+    timerProgressBar: true,
+    customClass: { popup: 'onboard-toast' }
+});
+
+const SWAL_CLASSES = {
+    popup: 'onboard-swal',
+    confirmButton: 'onboard-swal-confirm',
+    denyButton: 'onboard-swal-deny',
+    cancelButton: 'onboard-swal-cancel'
+};
+
+function validateForm() {
+    const fields = [
+        document.getElementById("fullName"),
+        document.getElementById("role"),
+        document.getElementById("startDate"),
+    ];
+    let firstInvalid = null;
+    fields.forEach((field) => {
+        const valid = field.value.trim() !== "";
+        field.classList.toggle("is-invalid", !valid);
+        if (!valid && !firstInvalid) firstInvalid = field;
+    });
+    if (firstInvalid) firstInvalid.focus();
+    return !firstInvalid;
+}
+
+[document.getElementById("fullName"), document.getElementById("role"), document.getElementById("startDate")].forEach((field) => {
+    field.addEventListener("input", () => {
+        if (field.value.trim() !== "") field.classList.remove("is-invalid");
+    });
 });
 
 document.getElementById("employeeForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     const id = document.getElementById("employeeId").value;
     const data = {
         full_name: document.getElementById("fullName").value,
@@ -255,10 +326,11 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
         if (response.ok) {
             resetForm();
             loadEmployees();
-            Swal.fire({ icon: 'success', title: id ? 'Atualizado!' : 'Cadastrado!', timer: 2000, showConfirmButton: false });
+            announce(id ? "Colaborador atualizado." : "Colaborador cadastrado.");
+            Swal.fire({ icon: 'success', title: id ? 'Atualizado!' : 'Cadastrado!', timer: 2000, showConfirmButton: false, customClass: SWAL_CLASSES });
         } else { throw new Error('Falha'); }
     } catch (error) {
-        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Erro ao salvar.' });
+        Swal.fire({ icon: 'error', title: 'Não foi possível salvar', text: 'Confira os dados e tente novamente.', customClass: SWAL_CLASSES });
         console.error(error);
     } finally {
         btn.innerHTML = originalContent;
@@ -281,6 +353,7 @@ function prepareEdit(id, name, role, date) {
 function resetForm() {
     document.getElementById("employeeForm").reset();
     document.getElementById("employeeId").value = "";
+    ["fullName", "role", "startDate"].forEach((id) => document.getElementById(id).classList.remove("is-invalid"));
     const btn = document.getElementById("submitBtn");
     btn.innerHTML = '<i class="bi bi-plus-lg"></i>';
     btn.classList.remove("btn-success");
@@ -295,21 +368,24 @@ async function toggleTask(taskId) {
         });
         if (response.ok) {
             loadEmployees();
+            announce("Progresso atualizado.");
         }
     } catch (error) { console.error(error); }
 }
 
 async function deleteEmployee(id) {
     Swal.fire({
-        title: 'Tem certeza?', text: "O histórico será apagado.", icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sim, excluir!'
+        title: 'Excluir este colaborador?', text: "O histórico de provisionamento será apagado.", icon: 'warning',
+        showCancelButton: true, confirmButtonText: 'Excluir', cancelButtonText: 'Cancelar',
+        customClass: { ...SWAL_CLASSES, confirmButton: 'onboard-swal-deny' }
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
                 const response = await fetch(`${API_URL}/employees/${id}`, { method: "DELETE", headers: AUTH_HEADER });
                 if (response.ok) {
                     loadEmployees();
-                    Swal.fire('Excluído!', '', 'success');
+                    announce("Colaborador excluído.");
+                    Swal.fire({ title: 'Excluído', icon: 'success', timer: 1800, showConfirmButton: false, customClass: SWAL_CLASSES });
                 }
             } catch (error) { console.error(error); }
         }

@@ -20,10 +20,27 @@
   --ok-soft: #DCEEE1;
   --wait: #8A8D6F;
   --wait-soft: #EDEBDD;
+  --error: #B3452F;
+  --error-soft: #F3DED7;
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Work Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 * {
@@ -92,6 +109,17 @@ nav.navbar .btn-outline-light:hover {
   color: var(--navy-deep);
 }
 
+.field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: .35rem;
+}
+
 .form-control {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -102,6 +130,26 @@ nav.navbar .btn-outline-light:hover {
 .form-control:focus {
   border-color: var(--navy);
   box-shadow: 0 0 0 3px rgba(35, 39, 82, .12);
+}
+
+.form-control.is-invalid {
+  border-color: var(--error);
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(179, 69, 47, .14);
+}
+
+.field-error {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: .95rem;
+  color: var(--error);
+  margin-top: .35rem;
+}
+
+.form-control.is-invalid ~ .field-error {
+  display: block;
 }
 
 .btn-primary {
@@ -142,10 +190,18 @@ nav.navbar .btn-outline-light:hover {
 .status-progress { border-left-color: var(--navy); }
 .status-done { border-left-color: var(--ok); }
 
-.avatar-circle {
+.avatar-badge {
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
-  border: none;
-  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .02em;
+  flex-shrink: 0;
 }
 
 .card-employee .card-title {
@@ -244,9 +300,145 @@ nav.navbar .btn-outline-light:hover {
   border-color: var(--ok) !important;
 }
 
+/* Card action dropdown — a manifest control, not a default
+   Bootstrap menu. */
+.card-employee .dropdown-menu {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .4rem;
+  box-shadow: 0 12px 28px rgba(27, 28, 43, .12);
+}
+
+.card-employee .dropdown-item {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  border-radius: 6px;
+  padding: .55rem .7rem;
+  color: var(--ink);
+}
+
+.card-employee .dropdown-item:hover,
+.card-employee .dropdown-item:focus {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.card-employee .dropdown-item i {
+  color: var(--ink-soft) !important;
+}
+
+.card-employee .dropdown-item.text-danger {
+  color: var(--error) !important;
+}
+
+.card-employee .dropdown-item.text-danger i {
+  color: var(--error) !important;
+}
+
+/* Checklist scroll panel — thin, on-brand scrollbar */
+.card-employee .card.card-body.bg-light {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.card-employee .card.card-body.bg-light::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-employee .card.card-body.bg-light::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+/* Skeleton loader — a manifest placeholder, not a spinner */
+.skeleton-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.skeleton-line {
+  height: .9rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--line) 25%, var(--paper) 50%, var(--line) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* SweetAlert2 — reskinned to the manifest identity instead of the
+   default light/blue theme. */
+.onboard-swal {
+  font-family: var(--font-body) !important;
+  border-radius: 10px !important;
+}
+
+.onboard-swal .swal2-title {
+  font-family: var(--font-display) !important;
+  color: var(--navy-deep) !important;
+}
+
+.onboard-swal-confirm {
+  background: var(--navy) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-mono) !important;
+  box-shadow: none !important;
+}
+
+.onboard-swal-confirm:focus {
+  box-shadow: 0 0 0 3px rgba(35, 39, 82, .2) !important;
+}
+
+.onboard-swal-deny {
+  background: var(--error) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-mono) !important;
+  box-shadow: none !important;
+}
+
+.onboard-swal-cancel {
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-mono) !important;
+  box-shadow: none !important;
+}
+
+.onboard-toast {
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  font-family: var(--font-body) !important;
+}
+
 /* Empty / loading states */
 
-#employeesList .text-muted h4 {
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--panel);
+}
+
+.empty-state h4 {
   font-family: var(--font-display);
   font-weight: 600;
+  color: var(--navy-deep);
+}
+
+.empty-state p {
+  color: var(--ink-soft);
+}
+
+@media (max-width: 767px) {
+  .btn-check-toggle {
+    width: 36px;
+    height: 36px;
+  }
 }
